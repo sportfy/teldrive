@@ -34,12 +34,12 @@ import (
 
 type FileService struct {
 	db     *gorm.DB
-	cnf    *config.TelegramConfig
+	cnf    *config.TGConfig
 	worker *tgc.StreamWorker
 }
 
 func NewFileService(db *gorm.DB, cnf *config.Config, worker *tgc.StreamWorker) *FileService {
-	return &FileService{db: db, cnf: &cnf.Telegram, worker: worker}
+	return &FileService{db: db, cnf: &cnf.TG, worker: worker}
 }
 
 func (fs *FileService) CreateFile(c *gin.Context, userId int64, fileIn *schemas.FileIn) (*schemas.FileOut, *types.AppError) {
@@ -165,30 +165,33 @@ func (fs *FileService) ListFiles(userId int64, fquery *schemas.FileQuery) (*sche
 	if fquery.Op == "list" {
 
 		query.Order("type DESC").Order(getOrder(fquery)).Where("parent_id = ?", pathId).
-			Model(filter)
+			Model(filter).Where(&filter)
 
 	} else if fquery.Op == "find" {
 
 		filter.Name = fquery.Name
 		filter.Type = fquery.Type
 		filter.ParentID = fquery.ParentID
-		filter.Starred = *fquery.Starred
 		filter.Path = fquery.Path
+		filter.Type = fquery.Type
+		if fquery.Starred != nil {
+			filter.Starred = *fquery.Starred
+		}
 
 		if fquery.Path != "" && fquery.Name != "" {
 			filter.ParentID = pathId
 			filter.Path = ""
 		}
 
-		query.Order("type DESC").Order(getOrder(fquery)).Where(fquery).
-			Model(&filter)
+		query.Order("type DESC").Order(getOrder(fquery)).
+			Model(&filter).Where(&filter)
 
 	} else if fquery.Op == "search" {
 
 		query.Where("teldrive.get_tsquery(?) @@ teldrive.get_tsvector(name)", fquery.Search)
 
 		query.Order(getOrder(fquery)).
-			Model(filter)
+			Model(&filter).Where(&filter)
 	}
 
 	if fquery.Path == "" {
@@ -524,7 +527,7 @@ func (fs *FileService) GetFileStream(c *gin.Context) {
 		parts = rangedParts(parts, start, end)
 
 		if file.Encrypted {
-			lr, _ = reader.NewDecryptedReader(c, client.Tg, parts, contentLength, fs.cnf.Uploads.EncrptionKey)
+			lr, _ = reader.NewDecryptedReader(c, client.Tg, parts, contentLength, fs.cnf.Uploads.EncryptionKey)
 		} else {
 			lr, _ = reader.NewLinearReader(c, client.Tg, parts, contentLength)
 		}

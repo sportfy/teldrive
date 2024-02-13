@@ -10,9 +10,12 @@ builds:
   - env:
       - CGO_ENABLED=0
       
-    main: cmd/teldrive/main.go
+    main: main.go
     flags: -trimpath
-    ldflags: "-extldflags -static -s -w"
+    ldflags:
+     - -extldflags=-static
+     - -s -w
+     - -X {{ .ModulePath }}/internal/config.Version={{ .Version }}
     mod_timestamp: "{{ .CommitTimestamp }}"
     goos:
       - linux
