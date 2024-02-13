@@ -32,7 +32,7 @@ services:
     restart: always
     container_name: teldrive
     volumes:
-      - ./teldrive.db:/teldrive.db:rw
+      - ./session.db:/session.db:rw
       - ./config.toml:/config.toml
     ports:
       - 8080:8080
@@ -48,7 +48,7 @@ services:
     restart: always
     container_name: teldrive
     volumes:
-      - ./teldrive.db:/teldrive.db:rw
+      - ./session.db:/session.db:rw
       - ./config.toml:/config.toml
     ports:
       - 8080:8080
@@ -88,7 +88,7 @@ app-hash = "fwfwfwf"
 ***Only these values are mandatory however you can change or
 tweak your config see more in advanced configurations below***.
 ```sh
-touch teldrive.db
+touch session.db
 docker compose up -d
 ```
 - **Go to http://localhost:8080**
@@ -102,6 +102,13 @@ docker compose up -d
 - Add same config file as above.
 - Now, run the Teldrive executable binary directly.
 - You can also set up without config file.
+
+**One line installer for linux**
+```sh
+curl -s https://i.jpillora.com/divyam234/teldrive | bash # install in current directory
+
+curl -s https://i.jpillora.com/divyam234/teldrive! | bash # install in /usr/local/bin
+```
 ```sh
 teldrive run --tg-app-id="" --tg-app-hash="" --jwt-secret="" --db-data-source=""
 ```
@@ -120,6 +127,7 @@ You can generate secret from [here](https://generate-secret.vercel.app/32).
   - Uploads from UI will be slower due to limitations of the browser. Use modified [Rclone](https://github.com/divyam234/rclone) version for teldrive.
   - Teldrive supports image thumbnail resizing on the fly. To enable this, you have to deploy a separate image resize service from [here](https://github.com/divyam234/image-resize).
   - After deploying this service, add its URL in Teldrive UI settings in the **Resize Host** field.
+  - Files are deleted at regular interval of one hour through cron job from tg channel after its deleted from teldrive this is done so  that person can recover files if he/she accidently deletes them.
 
 ### Advanced Configuration
 
@@ -138,22 +146,14 @@ teldrive run --help
 | --tg-uploads-encryption-key          | Encryption key for encrypting files.                           | No      | ""                               |
 | --config, -c                        | Config file.                                 | No       | $HOME/.teldrive/config.toml                           |
 | --server-port, -p                    | Server port                                       | No       | 8080                                                  |
-| --log-level                          | Logging level                                     | No       | -1 (Debug)                         |
+| --log-level                          | Logging level<br> <br> DebugLevel = -1 <br>InfoLevel = 0<br> WarnLevel = 1 <br> ErrorLevel = 2                                     | No       | -1                       |
 | --tg-rate-limit                      | Enable rate limiting                              | No       | true                                                  |
 | --tg-rate-burst                      | Limiting burst                                    | No       | 5                                                     |
 | --tg-rate                            | Limiting rate                                     | No       | 100                                                   |
+| --tg-session-file                        | Bot session file.                                 | No       | $HOME/.teldrive/session.db                          |
 | --tg-bg-bots-limit                   | Start at most this no of bots in the background to prevent connection recreation on every request.Increase this if you are streaming or downloading large no of files simultaneously.                             | No       | 5                                                                                          
 | --tg-uploads-threads                 | Concurrent Uploads threads for uploading file                                  | No       | 16                                                    |
 | --tg-uploads-retention               | Uploads retention duration.Duration to keep failed uploaded chunks in db for resuming uploads.                       | No       | 360h (30 days)                                               |
-
-
-```
-DebugLevel = -1
-InfoLevel = 0
-WarnLevel = 1
-ErrorLevel = 2
-```
-Possible log level values
 
 **You Can also set config values through env varibles.**
 - For example ```tg-session-file``` will become ```TELDRIVE_TG_SESSION_FILE``` same for all possible flags.
