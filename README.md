@@ -20,22 +20,8 @@ Telegram Drive is a powerful utility that enables you to organise your telegram 
 
 > [!IMPORTANT]
 > Teldrive functions as a wrapper over your Telegram account, simplifying file access. However, users must adhere to the limitations imposed by the Telegram API. Teldrive is not responsible for any consequences arising from non-compliance with these API limits.You will be banned instantly if you misuse telegram API.
-<style>
-.gallery {
-  display:grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 1rem;
-  display:relative;
-}
-.gallery-item{
- grid-column: span 3 / span 3;
-}
-@media (max-width: 476px) {
-.gallery-item{
- grid-column: span 6 / span 6;
- }
-}
-</style>
+
+<link rel="stylesheet" href="./public/style.css">
 
 <p class="gallery">
  <img alt="demo1" class="gallery-item" src="./public/demo1.png">
@@ -44,6 +30,7 @@ Telegram Drive is a powerful utility that enables you to organise your telegram 
  <img alt="demo4" class="gallery-item"src="./public/demo4.png">
  <img alt="demo5" class="gallery-item" src="./public/demo5.png">
 <p>
+
 
 [UI Repo ](https://github.com/divyam234/teldrive-ui)
 
