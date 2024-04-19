@@ -80,35 +80,20 @@ func (us *UserService) GetProfilePhoto(c *gin.Context) {
 }
 
 func (us *UserService) GetStats(c *gin.Context) (*schemas.AccountStats, *types.AppError) {
-	userId, _ := GetUserAuth(c)
-	var res []schemas.AccountStats
-	if err := us.db.Raw("select * from teldrive.account_stats(?);", userId).Scan(&res).Error; err != nil {
-		return nil, &types.AppError{Error: err, Code: http.StatusInternalServerError}
-	}
-	return &res[0], nil
-}
-
-func (us *UserService) GetBots(c *gin.Context) ([]string, *types.AppError) {
 	userID, _ := GetUserAuth(c)
 	var (
 		channelId int64
 		err       error
 	)
-	if c.Param("channelId") != "" {
-		channelId, _ = strconv.ParseInt(c.Param("channelId"), 10, 64)
-	} else {
-		channelId, err = GetDefaultChannel(c, us.db, userID)
-		if err != nil {
-			return nil, &types.AppError{Error: err, Code: http.StatusInternalServerError}
-		}
-	}
+
+	channelId, _ = GetDefaultChannel(c, us.db, userID)
 
 	tokens, err := getBotsToken(c, us.db, userID, channelId)
 
 	if err != nil {
 		return nil, &types.AppError{Error: err, Code: http.StatusInternalServerError}
 	}
-	return tokens, nil
+	return &schemas.AccountStats{Bots: tokens, ChannelID: channelId}, nil
 }
 
 func (us *UserService) UpdateChannel(c *gin.Context) (*schemas.Message, *types.AppError) {
